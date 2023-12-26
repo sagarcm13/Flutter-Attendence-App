@@ -1,15 +1,16 @@
-import 'package:attendece/pages/signup.dart';
+import 'package:attendece/pages/signup2.dart';
 import 'package:flutter/material.dart';
 
-class Login extends StatelessWidget {
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
+class SignUp extends StatelessWidget{
+  TextEditingController email=TextEditingController();
+  TextEditingController password=TextEditingController();
+  TextEditingController cpassword=TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(),
       body: SingleChildScrollView(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
               height: 80,
@@ -29,7 +30,7 @@ class Login extends StatelessWidget {
               height: 10,
             ),
             const Text(
-              "LOGIN TO YOUR ACCOUNT",
+              "SIGN UP TO CREATE NEW ACCOUNT",
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             Container(
@@ -46,11 +47,11 @@ class Login extends StatelessWidget {
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide:
-                            const BorderSide(color: Colors.black, width: 1)),
+                        const BorderSide(color: Colors.black, width: 1)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide:
-                            const BorderSide(color: Colors.black, width: 1))),
+                        const BorderSide(color: Colors.black, width: 1))),
               ),
             ),
             Padding(
@@ -65,52 +66,46 @@ class Login extends StatelessWidget {
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide:
-                            const BorderSide(color: Colors.black, width: 1)),
+                        const BorderSide(color: Colors.black, width: 1)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide:
-                            const BorderSide(color: Colors.black, width: 1))),
+                        const BorderSide(color: Colors.black, width: 1))),
               ),
             ),
-            Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,vertical: 0
-                  ),
-                  child: TextButton(
-                    style: TextButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap,minimumSize: Size.zero, // Set this
-                      padding: EdgeInsets.zero,),
-                    onPressed: () {
-                      print('hi');
-                    },
-                    child: const Text(
-                      'Forgot Password?',
-                      style: TextStyle(
-                          fontSize: 10,fontWeight: FontWeight.w500, color: Colors.black),
-                    ),
-                  ),
-                )),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: TextField(
+                controller: cpassword,
+                obscureText: true,
+                decoration: InputDecoration(
+                    labelText: "Confirm Password",
+                    filled: true,
+                    fillColor: Colors.black12,
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide:
+                        const BorderSide(color: Colors.black, width: 1)),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide:
+                        const BorderSide(color: Colors.black, width: 1))),
+              ),
+            ),
             ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>SignUp2()));
+                },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue,tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                 child: const Text(
-                  'LOG IN',
+                  'Sign Up',
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700),
                 )),
-            Center(
-              child: TextButton(
-                onPressed: (){
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>SignUp()));
-                },
-                style: TextButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                child: const Text("New User? Sign Up",style: TextStyle(fontSize: 10,fontWeight: FontWeight.w500, color: Colors.black),),
-              ),
-            )
           ],
         ),
       ),
     );
   }
+  
 }
