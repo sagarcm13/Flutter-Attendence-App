@@ -102,7 +102,7 @@ class Login extends StatelessWidget {
             Center(
               child: TextButton(
                 onPressed: (){
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>SignUp()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>SignUp()));
                 },
                 style: TextButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                 child: const Text("New User? Sign Up",style: TextStyle(fontSize: 10,fontWeight: FontWeight.w500, color: Colors.black),),

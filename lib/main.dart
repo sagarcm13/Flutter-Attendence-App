@@ -1,4 +1,7 @@
+import 'package:attendece/pages/home.dart';
 import 'package:attendece/pages/login.dart';
+import 'package:attendece/pages/markAttendence.dart';
+import 'package:attendece/pages/todayClasses.dart';
 import 'package:flutter/material.dart';
 
 void main() {

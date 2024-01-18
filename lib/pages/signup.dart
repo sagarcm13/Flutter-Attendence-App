@@ -94,7 +94,7 @@ class SignUp extends StatelessWidget{
             ),
             ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>SignUp2()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>SignUp2()));
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue,tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                 child: const Text(
