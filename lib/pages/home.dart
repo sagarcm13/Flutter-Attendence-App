@@ -1,4 +1,6 @@
 import 'package:attendece/pages/markAttendence.dart';
+import 'package:attendece/pages/myAttendance.dart';
+import 'package:attendece/pages/studentDetails.dart';
 import 'package:attendece/pages/todayClasses.dart';
 import 'package:flutter/material.dart';
 
@@ -182,7 +184,9 @@ class _HomeState extends State<Home> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>StudentDetails()));
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -218,12 +222,14 @@ class _HomeState extends State<Home> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>MyAttendance()));
+                    },
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Class Details",
+                          "My Attendance",
                           style: TextStyle(fontSize: 22, color: Colors.black),
                         ),
                         Icon(Icons.play_arrow)

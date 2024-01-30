@@ -1,6 +1,7 @@
 import 'package:attendece/pages/home.dart';
 import 'package:attendece/pages/login.dart';
 import 'package:attendece/pages/markAttendence.dart';
+import 'package:attendece/pages/splashScreen.dart';
 import 'package:attendece/pages/todayClasses.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),
-      home: Login()
+      home: SplashScreen()
     );
   }
 }
