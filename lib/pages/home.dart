@@ -1,6 +1,8 @@
 import 'package:attendece/pages/attendanceStatus.dart';
 import 'package:attendece/pages/facultyDetails.dart';
 import 'package:attendece/pages/markAttendence.dart';
+import 'package:attendece/pages/myAttendance.dart';
+import 'package:attendece/pages/studentDetails.dart';
 import 'package:attendece/pages/todayClasses.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

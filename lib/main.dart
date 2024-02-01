@@ -6,6 +6,7 @@ import 'package:attendece/pages/markAttendence.dart';
 import 'package:attendece/pages/passwordVerify.dart';
 import 'package:attendece/pages/signup.dart';
 import 'package:attendece/pages/studentsDetails.dart';
+import 'package:attendece/pages/splashScreen.dart';
 import 'package:attendece/pages/todayClasses.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
           useMaterial3: true,
         ),
-        home: PasswordVerify() //(FirebaseAuth.instance.currentUser!=null)?Home():Login()
+        home: PasswordVerify() //(FirebaseAuth.instance.currentUser!=null)?Home():SplashScreen()
         );
   }
 }
