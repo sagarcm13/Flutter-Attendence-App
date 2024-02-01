@@ -1,24 +1,68 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:attendece/pages/home.dart';
 
 class TodayClasses extends StatefulWidget {
-  const TodayClasses({super.key});
-
+  Map<String, dynamic> userDetail;
+  TodayClasses(this.userDetail, {super.key});
   @override
-  State<TodayClasses> createState() => _TodayClassesState();
+  State<TodayClasses> createState() => _TodayClassesState(userDetail);
 }
 
 class _TodayClassesState extends State<TodayClasses> {
-  String name = "Kirthan";
-  String email = "kirthan.cs21@bmsce.ac.in";
-  List<Map<String, String>> subjects = [
-    {"subject": "DSA", 'AttendenceStatus': 'present', 'time': '9:30am'},
-    {"subject": "DBMS", 'AttendenceStatus': 'absent', 'time': '10:30am'},
-    {
-      "subject": "Computer Network",
-      'AttendenceStatus': 'absent',
-      'time': '11:30am'
+  Map<String, dynamic> user;
+  _TodayClassesState(this.user);
+  bool isStudent = false;
+  List<Map<String, dynamic>> classes = [];
+  List<Map<String, dynamic>> subTimeSec = [];
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final FirebaseFirestore db = FirebaseFirestore.instance;
+  List attendanceStatus = ['present', 'absent', 'absent', 'present'];
+  @override
+  void initState() {
+    super.initState();
+    isStudent = user['email'].contains('cs21');
+    print(user);
+    if (isStudent) {
+      studentGetClasses();
+    } else {
+      facultyGetClasses();
     }
-  ];
+  }
+
+  Future<void> facultyGetClasses() async {
+    // final User? user = auth.currentUser;
+    // email=user!.email!;
+    await db
+        .collection("Subjects_Handling")
+        .where("email", isEqualTo: user['email'])
+        .get()
+        .then((event) {
+      for (var doc in event.docs) {
+        print("${doc.id} => ${doc.data()}");
+        subTimeSec.add(doc.data());
+      }
+    });
+    print(subTimeSec);
+    setState(() {});
+  }
+
+  Future<void> studentGetClasses() async {
+    // final User? user = auth.currentUser;
+    // email=user!.email!;
+    await db
+        .collection("Class_Time_Table")
+        .where("section", isEqualTo: user['sec'])
+        .where("day", isEqualTo: "monday")
+        .get()
+        .then((value) => {
+              for (var doc in value.docs)
+                {print("${doc.id} => ${doc.data()}"), classes.add(doc.data())}
+            });
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +79,14 @@ class _TodayClassesState extends State<TodayClasses> {
                   Icons.home,
                   size: 40,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => const Home()),
+                    (Route<dynamic> route) => false,
+                  );
+                },
               ),
               const Text(
                 "Attendity",
@@ -58,7 +109,7 @@ class _TodayClassesState extends State<TodayClasses> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 50.0),
                 child: Text(
-                  name,
+                  user['name'],
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 20),
                 ),
@@ -68,7 +119,7 @@ class _TodayClassesState extends State<TodayClasses> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 50.0),
                 child: Text(
-                  email,
+                  user['email'],
                   style: const TextStyle(fontSize: 20),
                 ),
               )),
@@ -83,9 +134,13 @@ class _TodayClassesState extends State<TodayClasses> {
               )),
           Expanded(
             child: ListView.builder(
-                itemCount: subjects.length,
+                itemCount: (isStudent && classes.isNotEmpty)
+                    ? classes[0]['subjects'].length
+                    : subTimeSec.length,
                 itemBuilder: (context, index) {
-                  String s = subjects[index]['subject']!;
+                  String s = (isStudent)
+                      ? classes[0]['subjects'][index]!
+                      : subTimeSec[index]['subject'];
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
@@ -102,26 +157,33 @@ class _TodayClassesState extends State<TodayClasses> {
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(subjects[index]['subject']!),
-                            Text(subjects[index]['time']!)
+                            Text((isStudent)
+                                ? classes[0]['subjects'][index]!
+                                : subTimeSec[index]['subject']),
+                            Text((isStudent)
+                                ? classes[0]['subjectTime'][index]!
+                                : subTimeSec[index]['time'])
                           ],
                         ),
-                        subtitle: Row(
-                          children: [
-                            const Text("you are marked as "),
-                            (subjects[index]['AttendenceStatus'] == 'present')
-                                ? Text(
-                                    subjects[index]['AttendenceStatus']!,
-                                    style: const TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold),
-                                  )
-                                : Text(subjects[index]['AttendenceStatus']!,
-                                    style: const TextStyle(
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold))
-                          ],
-                        ),
+                        subtitle: (isStudent)
+                            ? Row(
+                                children: [
+                                  const Text("you are marked as "),
+                                  (attendanceStatus[index] == 'present')
+                                      ? Text(
+                                          attendanceStatus[index]!,
+                                          style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold),
+                                        )
+                                      : Text(attendanceStatus[index]!,
+                                          style: const TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold))
+                                ],
+                              )
+                            : Text(
+                                "you have a Class for ${subTimeSec[index]['sem']}${subTimeSec[index]['sec']}"),
                       ),
                     ),
                   );
