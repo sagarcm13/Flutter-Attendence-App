@@ -1,4 +1,6 @@
+import 'package:attendece/pages/home.dart';
 import 'package:attendece/pages/signup2.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -22,10 +24,20 @@ class _SignUpState extends State<SignUp> {
       invalidNotifier="password and confirm password are not same";
     }
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential =await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email.text.trim(),
         password: password.text.trim(),
       );
+      invalid=true;
+      await userCredential.user!.sendEmailVerification();
+      User? user = FirebaseAuth.instance.currentUser;
+      invalidNotifier="email verification link is sent your email";
+      if (user != null && user.emailVerified) {
+        print(user.emailVerified);
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>Home()), (route) => false);
+      } else {
+        invalidNotifier="User is not verified, show a message or redirect to a verification screen.";
+      }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         invalid=true;
@@ -175,7 +187,7 @@ class _SignUpState extends State<SignUp> {
             ),
             ElevatedButton(
                 onPressed: () {
-                  createNewUser();
+                  // createNewUser();
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => SignUp2()));
                 },

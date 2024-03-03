@@ -1,25 +1,16 @@
 import 'package:attendece/pages/home.dart';
-import 'package:attendece/pages/profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
-class MarkAttendence extends StatefulWidget {
-  Map<String, dynamic> user;
-  MarkAttendence(this.user, {super.key});
+class AttendanceTrigger extends StatefulWidget {
+  const AttendanceTrigger({super.key});
   @override
-  State<MarkAttendence> createState() => _MarkAttendenceState(user);
+  State<AttendanceTrigger> createState() => _AttendanceTriggerState();
 }
 
-class _MarkAttendenceState extends State<MarkAttendence>
+class _AttendanceTriggerState extends State<AttendanceTrigger>
     with TickerProviderStateMixin {
-  Map<String, dynamic> user;
-  _MarkAttendenceState(this.user);
-  final FirebaseFirestore db = FirebaseFirestore.instance;
-  List<String> USN = [];
-  List<bool> isMarked = List.filled(50, true);
-  bool selectAll = true;
-
   List<int> seconds = [10, 20, 30, 40, 50, 60];
   late int dropdownValue;
   late AnimationController controller;
@@ -30,52 +21,6 @@ class _MarkAttendenceState extends State<MarkAttendence>
   Position? currentPosition;
   double? latitude;
   double? longitude;
-  Future<void> getStudents() async {
-    await db
-        .collection("Student_Info")
-        .where("sec", isEqualTo: 'C')
-        .where("sem", isEqualTo: 5)
-        .get()
-        .then((event) {
-      for (var doc in event.docs) {
-        print("${doc.id} => ${doc.data()['USN']}");
-        USN.add(doc.data()['USN']);
-      }
-    });
-    print(USN);
-    setState(() {});
-  }
-
-  Future<void> markAttendance() async {
-    List isPresent = [];
-    List isAbsent = [];
-    for (int i = 0; i < USN.length; i++) {
-      if (isMarked[i] == true) {
-        isPresent.add(USN[i]);
-      } else {
-        isAbsent.add(USN[i]);
-      }
-    }
-    QuerySnapshot querySnapshot = await db
-        .collection('Student_Attendance')
-        .where('USN', whereIn: USN)
-        .get();
-    int i = 0;
-    for (var doc in querySnapshot.docs) {
-      DocumentReference documentReference = doc.reference;
-      Map<String, dynamic> currentSubjectInfo = doc['AA-Status'];
-      if (isMarked[i] == true) {
-        currentSubjectInfo['total_classes'] =
-            (currentSubjectInfo['total_classes']! + 1);
-        currentSubjectInfo['Attended'] = (currentSubjectInfo['Attended']! + 1);
-      } else {
-        currentSubjectInfo['total_classes'] =
-            (currentSubjectInfo['total_classes']! + 1);
-      }
-      print("$currentSubjectInfo");
-      await documentReference.update({'AA-Status': currentSubjectInfo});
-    }
-  }
 
   Future<void> getLocationStatus() async {
     permission = await Geolocator.checkPermission();
@@ -83,8 +28,7 @@ class _MarkAttendenceState extends State<MarkAttendence>
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.deniedForever) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Location permissions are permanently denied, we cannot request permissions.')));
+            content: Text('Location permissions are permanently denied, we cannot request permissions.')));
         setState(() {});
       }
     } else {
@@ -95,8 +39,7 @@ class _MarkAttendenceState extends State<MarkAttendence>
             content: Text(
                 'Location services are disabled. Please enable the services')));
       } else {
-        Position position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high);
+        Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
         setState(() {
           currentPosition = position;
         });
@@ -114,7 +57,9 @@ class _MarkAttendenceState extends State<MarkAttendence>
       });
       latitude = currentPosition.latitude;
       longitude = currentPosition.longitude;
-      FirebaseFirestore.instance.collection('Attendance_Trigger').add({
+      FirebaseFirestore.instance
+          .collection('Attendance_Trigger')
+          .add({
         'MarkAttendance': true,
         'Location': {'latitude': latitude, 'longitude': longitude}
       }).then((value) => print(value.id));
@@ -123,28 +68,18 @@ class _MarkAttendenceState extends State<MarkAttendence>
             .collection('Attendance_Trigger')
             .add({'MarkAttendance': false}).then((value) => print(value.id));
         setState(() {});
-        FirebaseFirestore.instance
-            .collection("Attendance_Trigger")
-            .get()
-            .then((querySnapshot) {
-          for (var doc in querySnapshot.docs) {
-            doc.reference.delete();
-          }
-          setState(() {
-            isActive=false;
-          });
-        }).catchError((error) {
-          print("Error deleting documents: $error");
-        });
       });
     }
+    FirebaseFirestore.instance.collection("Attendance_Trigger").get().then((querySnapshot) {
+      for (var doc in querySnapshot.docs) {
+        doc.reference.delete();
+      }
+    }).catchError((error) {
+      print("Error deleting documents: $error");
+    });
   }
-
   @override
   void initState() {
-    super.initState();
-    getStudents();
-    print(USN);
     dropdownValue = seconds[2];
     super.initState();
     controller = AnimationController(
@@ -195,14 +130,13 @@ class _MarkAttendenceState extends State<MarkAttendence>
                   Icons.person_pin,
                   size: 40,
                 ),
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Profile(user)));
-                },
+                onPressed: () {},
               )
             ],
           ),
-          Container(height: 20,),
+          Container(
+            height: 40,
+          ),
           const Text(
             "Attendance Trigger",
             style: TextStyle(fontSize: 30),
@@ -233,12 +167,12 @@ class _MarkAttendenceState extends State<MarkAttendence>
           Container(
             height: 10,
           ),
-          (!isActive)?ElevatedButton(
+          ElevatedButton(
               onPressed: () => attendanceTrigger(),
               child: const Text(
                 'Trigger',
                 style: TextStyle(fontSize: 20),
-              )):Text(""),
+              )),
           (isActive)
               ? Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -267,84 +201,10 @@ class _MarkAttendenceState extends State<MarkAttendence>
               : const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    'Trigger to mark Attendance',
+                    'Press Trigger to allow students to mark Attendance',
                     style: TextStyle(fontSize: 20),
                   ),
                 ),
-          const Text("Mark Attendance Manually",
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500)),
-          Container(
-            height: 10,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              const Text(
-                "Students",
-                style: TextStyle(fontSize: 25),
-              ),
-              Row(
-                children: [
-                  const Text(
-                    'select all',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  Checkbox(
-                      value: selectAll,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          selectAll = value!;
-                          isMarked = List.filled(50, selectAll);
-                        });
-                      }),
-                ],
-              )
-            ],
-          ),
-          Expanded(
-            child: ListView.builder(
-                itemCount: USN.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(USN[index].substring(7)),
-                    ),
-                    title: Text(USN[index]),
-                    subtitle: Row(
-                      children: [
-                        const Text('Marked as '),
-                        (isMarked[index])
-                            ? const Text(
-                                'Present',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              )
-                            : const Text(
-                                "Absent",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red),
-                              )
-                      ],
-                    ),
-                    trailing: Checkbox(
-                      value: isMarked[index],
-                      onChanged: (bool? value) {
-                        setState(() {
-                          isMarked[index] = value!;
-                          if (isMarked.contains(false)) {
-                            selectAll = false;
-                          } else {
-                            selectAll = true;
-                          }
-                        });
-                      },
-                    ),
-                  );
-                }),
-          ),
-          ElevatedButton(
-              onPressed: () => markAttendance(),
-              child: const Text('Submit Attendance'))
         ],
       ),
     );

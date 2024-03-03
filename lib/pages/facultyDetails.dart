@@ -90,9 +90,9 @@ class _FacultyDetailsState extends State<FacultyDetails> {
           ),
           const Text(
             "Faculty Details",
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w400),
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.w400),
           ),
-          const Text('SEM 5 Section C',style: TextStyle(fontSize: 25),),
+          const Text('SEM 5 Section C',style: TextStyle(fontSize: 20),),
           Expanded(
             child: ListView.builder(
                 itemCount: facultyDetails.length,
@@ -111,10 +111,10 @@ class _FacultyDetailsState extends State<FacultyDetails> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(facultyDetails[index]['name'],style: const TextStyle(fontSize: 25),),
-                        Text('Subjects handling: ${subject[index]}',style: const TextStyle(fontSize: 20)),
-                        Text("email: ${email[index]}",style:const TextStyle(fontSize: 20)),
-                        Text("phone: ${facultyDetails[index]['phone']}",style:const TextStyle(fontSize: 20))
+                        Text(facultyDetails[index]['name'],style: const TextStyle(fontSize: 22),),
+                        Text('Subjects handling: ${subject[index]}',style: const TextStyle(fontSize: 18)),
+                        Text("email: ${email[index]}",style:const TextStyle(fontSize: 18)),
+                        Text("phone: ${facultyDetails[index]['phone']}",style:const TextStyle(fontSize: 18))
                       ],
                     ),
                   ),

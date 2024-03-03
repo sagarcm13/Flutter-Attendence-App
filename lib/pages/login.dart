@@ -151,7 +151,7 @@ class _LoginState extends State<Login> {
                       padding: EdgeInsets.zero,
                     ),
                     onPressed: () {
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>PasswordVerify()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>PasswordVerify()));
                     },
                     child: const Text(
                       'Forgot Password?',

@@ -1,9 +1,12 @@
 import 'dart:async';
-// import 'package:attendease/main.dart';
 import 'package:attendece/pages/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'home.dart';
+
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
   @override
   State<StatefulWidget> createState() => _SplashScreenState();
 }
@@ -13,13 +16,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 4), () {
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(title: 'AttendEase')));
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Login()));
-
+    Timer(const Duration(seconds: 2), () {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => (FirebaseAuth.instance.currentUser!=null)?const Home():Login()));
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,10 +28,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           width: double.infinity,
           height: double.infinity,
           color: Colors.blue.shade300,
-          child: Column(
+          child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/Images/attendity.png',),
+              Text("A",style: TextStyle(fontFamily: 'MyFont',fontSize: 130),),
               Text("Loading...", style: TextStyle(fontSize: 30, fontFamily: 'MyFont'),),
               SizedBox(height: 30,),
               Text("Mark your attendence at", style: TextStyle(fontSize: 20),),

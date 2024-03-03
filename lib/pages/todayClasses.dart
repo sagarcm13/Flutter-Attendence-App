@@ -1,3 +1,4 @@
+import 'package:attendece/pages/profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -97,7 +98,7 @@ class _TodayClassesState extends State<TodayClasses> {
                   Icons.person_pin,
                   size: 40,
                 ),
-                onPressed: () {},
+                onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>Profile(user)));},
               )
             ],
           ),

@@ -1,8 +1,10 @@
 import 'package:attendece/pages/attendanceStatus.dart';
 import 'package:attendece/pages/facultyDetails.dart';
+import 'package:attendece/pages/getAttendandanceButton.dart';
 import 'package:attendece/pages/markAttendence.dart';
 import 'package:attendece/pages/myAttendance.dart';
-import 'package:attendece/pages/studentDetails.dart';
+import 'package:attendece/pages/profile.dart';
+import 'package:attendece/pages/studentsDetails.dart';
 import 'package:attendece/pages/todayClasses.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -16,9 +18,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  String name = "Kirthan";
-  // String email = "kirthan.cs21@bmsce.ac.in";
-  String email = "sagarcm13@gmail.com";
+  String name = "";
+  String email = '';
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore db = FirebaseFirestore.instance;
   List<Map<String, dynamic>> user = [];
@@ -29,8 +30,8 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> getUser() async {
-    // final User? user = auth.currentUser;
-    // email=user!.email!;
+    final User? userDetail = auth.currentUser;
+    email=userDetail!.email!;
     if (!email.contains('cs21')) {
       print('get $email');
       await db
@@ -88,7 +89,7 @@ class _HomeState extends State<Home> {
                     Icons.person_pin,
                     size: 40,
                   ),
-                  onPressed: () {},
+                  onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>Profile(user[0])));},
                 )
               ],
             ),
@@ -203,6 +204,8 @@ class _HomeState extends State<Home> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       MarkAttendence(user[0])));
+                        }else{
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>MyAttendance()));
                         }
                       },
                       child: Row(
@@ -245,7 +248,12 @@ class _HomeState extends State<Home> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => FacultyDetails()));
+                                  builder: (context) => const FacultyDetails()));
+                        }else{
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const StudentsDetails()));
                         }
                       },
                       child: Row(
@@ -290,6 +298,12 @@ class _HomeState extends State<Home> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       const AttendaceStatus()));
+                        }else{
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                  GetAttendanceButton(user[0])));
                         }
                       },
                       child: Row(
@@ -297,7 +311,7 @@ class _HomeState extends State<Home> {
                         children: [
                           (email.contains('cs21'))
                               ? const Text(
-                                  "Class Details",
+                                  "Mark Attendance",
                                   style: TextStyle(
                                       fontSize: 22, color: Colors.black),
                                 )
