@@ -28,10 +28,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           width: double.infinity,
           height: double.infinity,
           color: Colors.blue.shade300,
-          child: const Column(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("A",style: TextStyle(fontFamily: 'MyFont',fontSize: 130),),
+              Image.asset("assets/Images/attendity.png",fit: BoxFit.cover,),
               Text("Loading...", style: TextStyle(fontSize: 30, fontFamily: 'MyFont'),),
               SizedBox(height: 30,),
               Text("Mark your attendence at", style: TextStyle(fontSize: 20),),
