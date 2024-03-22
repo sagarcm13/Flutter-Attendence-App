@@ -1,35 +1,55 @@
 import 'package:attendece/pages/home.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class MyAttendance extends StatefulWidget {
+  final Map<String, dynamic> userDetail;
+  const MyAttendance(this.userDetail, {super.key});
   @override
-  _MyAttendanceState createState() => _MyAttendanceState();
+  _MyAttendanceState createState() => _MyAttendanceState(userDetail);
 }
 
 class _MyAttendanceState extends State<MyAttendance> {
+  final Map<String, dynamic> user;
+  _MyAttendanceState(this.user);
   List<int> totalClasses = [];
   List<int> attendedClasses = [];
-  List<String> courses = ["AI", "CRP", "IOT", "AA", "CD"];
-
+  List<String> courses = [];
+  List<Map<String,dynamic>> subjectAttendance=[];
   @override
   void initState() {
     super.initState();
     fetchDataFromDatabase();
   }
 
-  void fetchDataFromDatabase() {
-    // Fetch data from the database and populate the lists
-    // For demonstration, using some placeholder values
-    totalClasses = [10, 15, 20, 13, 12];
-    attendedClasses = [8, 13, 19, 7, 3];
+  Future<void> fetchDataFromDatabase() async {
+    await FirebaseFirestore.instance
+        .collection('Student_Attendance')
+        .where("USN", isEqualTo: user['USN'])
+        .get()
+        .then((value) => {
+      for(var doc in value.docs){
+        subjectAttendance.add(doc.data()),
+      }
+    });
+    print(subjectAttendance);
+    for(var item in subjectAttendance[0]['subjectAttendance']){
+      print(item);
+      totalClasses.add(item['total']);
+      attendedClasses.add(item['attended']);
+      courses.add(item['subject']);
+    }
+    print(totalClasses);
+    print(attendedClasses);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     List<BarChartGroupData> barGroups = List.generate(
       totalClasses.length,
-          (index) {
+      (index) {
         return BarChartGroupData(
           x: index,
           barsSpace: 4,
@@ -68,8 +88,9 @@ class _MyAttendanceState extends State<MyAttendance> {
 
     List<PieChartSectionData> pieChartSections = List.generate(
       totalClasses.length,
-          (index) {
-        double attendedPercentage = (attendedClasses[index] / totalClasses[index]) * 100;
+      (index) {
+        double attendedPercentage =
+            (attendedClasses[index] / totalClasses[index]) * 100;
         double remainingPercentage = 100 - attendedPercentage;
 
         return PieChartSectionData(
@@ -77,15 +98,17 @@ class _MyAttendanceState extends State<MyAttendance> {
           value: attendedPercentage,
           title: '${attendedClasses[index]}/${totalClasses[index]}',
           radius: 60,
-          titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+          titleStyle: const TextStyle(
+              fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
         );
       },
     );
 
     List<Widget> subjectDetailsWidgets = List.generate(
       courses.length,
-          (index) {
-        double attendedPercentage = (attendedClasses[index] / totalClasses[index]) * 100;
+      (index) {
+        double attendedPercentage =
+            (attendedClasses[index] / totalClasses[index]) * 100;
         Color textColor = _getPercentageColor(attendedPercentage);
 
         return ListTile(
@@ -108,8 +131,8 @@ class _MyAttendanceState extends State<MyAttendance> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                SizedBox(
-                  height: 60,
+                const SizedBox(
+                  height: 50,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -119,7 +142,12 @@ class _MyAttendanceState extends State<MyAttendance> {
                         Icons.home,
                         size: 40,
                       ),
-                      onPressed: () {Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const Home()));},
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const Home()));
+                      },
                     ),
                     const Text(
                       "Attendity",
@@ -140,6 +168,9 @@ class _MyAttendanceState extends State<MyAttendance> {
                     children: subjectDetailsWidgets,
                   ),
                 ),
+                Container(
+                  height: 10,
+                ),
                 SizedBox(
                   height: 300,
                   child: BarChart(
@@ -157,7 +188,6 @@ class _MyAttendanceState extends State<MyAttendance> {
                     ),
                   ),
                 ),
-
               ],
             ),
           ),
