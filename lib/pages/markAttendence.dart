@@ -5,15 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 class MarkAttendence extends StatefulWidget {
-  Map<String, dynamic> user;
-  MarkAttendence(this.user, {super.key});
+  final Map<String, dynamic> user;
+  const MarkAttendence(this.user, {super.key});
   @override
   State<MarkAttendence> createState() => _MarkAttendenceState(user);
 }
 
 class _MarkAttendenceState extends State<MarkAttendence>
     with TickerProviderStateMixin {
-  Map<String, dynamic> user;
+  final Map<String, dynamic> user;
   _MarkAttendenceState(this.user);
   final FirebaseFirestore db = FirebaseFirestore.instance;
   List<String> USN = [];
@@ -21,7 +21,9 @@ class _MarkAttendenceState extends State<MarkAttendence>
   bool selectAll = true;
 
   List<int> seconds = [10, 20, 30, 40, 50, 60];
+  List<int> range = [5, 10, 20];
   late int dropdownValue;
+  late int dropdownValue2;
   late AnimationController controller;
   double get progress => controller.value;
   bool isActive = false;
@@ -63,17 +65,17 @@ class _MarkAttendenceState extends State<MarkAttendence>
     int i = 0;
     for (var doc in querySnapshot.docs) {
       DocumentReference documentReference = doc.reference;
-      Map<String, dynamic> currentSubjectInfo = doc['AA-Status'];
-      if (isMarked[i] == true) {
-        currentSubjectInfo['total_classes'] =
-            (currentSubjectInfo['total_classes']! + 1);
-        currentSubjectInfo['Attended'] = (currentSubjectInfo['Attended']! + 1);
-      } else {
-        currentSubjectInfo['total_classes'] =
-            (currentSubjectInfo['total_classes']! + 1);
+      List<dynamic> currentSubjectInfo  = doc['subjectAttendance'];
+      for (var item in currentSubjectInfo) {
+        if (item['subject'] == "AA" && isMarked[i] == true) {
+          item['total'] = (item['total']! + 1);
+          item['attended'] = (item['attended']! + 1);
+        }else if(item['subject'] == "AA"){
+          item['total'] = (item['total']! + 1);
+        }
       }
       print("$currentSubjectInfo");
-      await documentReference.update({'AA-Status': currentSubjectInfo});
+      await documentReference.update({'subjectAttendance': currentSubjectInfo});
     }
   }
 
@@ -114,9 +116,12 @@ class _MarkAttendenceState extends State<MarkAttendence>
       });
       latitude = currentPosition.latitude;
       longitude = currentPosition.longitude;
+      print("latitude: $latitude longitude: $longitude");
       FirebaseFirestore.instance.collection('Attendance_Trigger').add({
         'MarkAttendance': true,
-        'Location': {'latitude': latitude, 'longitude': longitude}
+        'latitude': latitude,
+        'longitude': longitude,
+        'Range': dropdownValue2
       }).then((value) => print(value.id));
       Future.delayed(Duration(seconds: dropdownValue), () {
         FirebaseFirestore.instance
@@ -146,6 +151,7 @@ class _MarkAttendenceState extends State<MarkAttendence>
     getStudents();
     print(USN);
     dropdownValue = seconds[2];
+    dropdownValue2 = range.first;
     super.initState();
     controller = AnimationController(
       vsync: this,
@@ -210,25 +216,50 @@ class _MarkAttendenceState extends State<MarkAttendence>
           Container(
             height: 20,
           ),
-          const Text(
-            "set timer in seconds",
-            style: TextStyle(fontSize: 20),
+          const Text("Sub: AA",style: TextStyle(fontSize: 25),),
+          Container(height: 20,),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Text(
+                "set timer in seconds",
+                style: TextStyle(fontSize: 20),
+              ),
+              Text("set Range in meters",style: TextStyle(fontSize: 20))
+            ],
           ),
           Container(
             height: 10,
           ),
-          DropdownMenu<int>(
-            initialSelection: dropdownValue,
-            onSelected: (int? value) {
-              setState(() {
-                dropdownValue = value!;
-                controller.duration = Duration(seconds: dropdownValue);
-              });
-            },
-            dropdownMenuEntries:
-                seconds.map<DropdownMenuEntry<int>>((int value) {
-              return DropdownMenuEntry<int>(value: value, label: "$value");
-            }).toList(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              DropdownMenu<int>(
+                initialSelection: dropdownValue,
+                onSelected: (int? value) {
+                  setState(() {
+                    dropdownValue = value!;
+                    controller.duration = Duration(seconds: dropdownValue);
+                  });
+                },
+                dropdownMenuEntries:
+                    seconds.map<DropdownMenuEntry<int>>((int value) {
+                  return DropdownMenuEntry<int>(value: value, label: "$value");
+                }).toList(),
+              ),
+              DropdownMenu<int>(
+                initialSelection: range.first,
+                onSelected: (int? value) {
+                  setState(() {
+                    dropdownValue2 = value!;
+                  });
+                },
+                dropdownMenuEntries:
+                    range.map<DropdownMenuEntry<int>>((int value) {
+                  return DropdownMenuEntry<int>(value: value, label: "$value");
+                }).toList(),
+              ),
+            ],
           ),
           Container(
             height: 10,

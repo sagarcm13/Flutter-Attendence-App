@@ -28,17 +28,23 @@ class _AttendaceStatusState extends State<AttendaceStatus> {
         .then((value) => {
               for (var doc in value.docs) {USN.add(doc.data()['USN'])}
             });
+    List<dynamic> list = [];
     await db
         .collection('Student_Attendance')
         .where('USN', whereIn: USN)
         .get()
         .then((value) => {
               for (var doc in value.docs)
-                {
-                  print(doc.data()['AA-Status']),
-                  getAttendance.add(doc.data()['AA-Status'])
-                }
+                {print(doc.data()), list.add(doc.data()['subjectAttendance'])}
             });
+    for (var listItem in list) {
+      for (var item in listItem) {
+        if (item['subject'] == 'AA') {
+          getAttendance.add(
+              {"total_classes": item['total'], 'Attended': item['attended']});
+        }
+      }
+    }
     print(getAttendance);
     setState(() {});
   }
@@ -97,7 +103,7 @@ class _AttendaceStatusState extends State<AttendaceStatus> {
                     subtitle: Text(
                         'Total Classes: ${getAttendance[index]['total_classes']} Attended: ${getAttendance[index]['Attended']}'),
                     leading: CircleAvatar(
-                      radius: 30,
+                        radius: 30,
                         child: Text(
                             '${(getAttendance[index]['Attended'] / getAttendance[index]['total_classes'] * 100).floor()}%')),
                   );

@@ -19,8 +19,12 @@ class _ProfileState extends State<Profile> {
     routeToLogin();
   }
   void routeToLogin(){
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => Login()));
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+          builder: (BuildContext context) => Login()),
+          (Route<dynamic> route) => false,
+    );
   }
   @override
   Widget build(BuildContext context) {

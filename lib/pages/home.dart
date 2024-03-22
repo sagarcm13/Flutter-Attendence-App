@@ -31,7 +31,7 @@ class _HomeState extends State<Home> {
 
   Future<void> getUser() async {
     final User? userDetail = auth.currentUser;
-    email=userDetail!.email!;
+    email = userDetail!.email!;
     if (!email.contains('cs21')) {
       print('get $email');
       await db
@@ -89,7 +89,12 @@ class _HomeState extends State<Home> {
                     Icons.person_pin,
                     size: 40,
                   ),
-                  onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>Profile(user[0])));},
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Profile(user[0])));
+                  },
                 )
               ],
             ),
@@ -160,12 +165,12 @@ class _HomeState extends State<Home> {
                     padding: const EdgeInsets.all(8.0),
                     child: TextButton(
                       onPressed: () {
-                        try{
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => TodayClasses(user[0])));
-                        }catch(e){
+                        try {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TodayClasses(user[0])));
+                        } catch (e) {
                           print(e);
                         }
                       },
@@ -204,8 +209,11 @@ class _HomeState extends State<Home> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       MarkAttendence(user[0])));
-                        }else{
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=>MyAttendance()));
+                        } else {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MyAttendance(user[0])));
                         }
                       },
                       child: Row(
@@ -248,12 +256,14 @@ class _HomeState extends State<Home> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const FacultyDetails()));
-                        }else{
+                                  builder: (context) =>
+                                      const FacultyDetails()));
+                        } else {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const StudentsDetails()));
+                                  builder: (context) =>
+                                      const StudentsDetails()));
                         }
                       },
                       child: Row(
@@ -298,12 +308,12 @@ class _HomeState extends State<Home> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       const AttendaceStatus()));
-                        }else{
+                        } else {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                  GetAttendanceButton(user[0])));
+                                      GetAttendanceButton(user[0])));
                         }
                       },
                       child: Row(
@@ -330,7 +340,27 @@ class _HomeState extends State<Home> {
         ),
       );
     } else {
-      return const Scaffold(body: Center(child: Text('User Data Loading')));
+      return Scaffold(
+        body: Container(
+          alignment: Alignment.center,
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "User Data Loading",
+                style: TextStyle(fontSize: 20),
+              ),
+              SizedBox(
+                  height:
+                      20), // Add some space between text and CircularProgressIndicator
+              CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              ),
+            ],
+          ),
+        ),
+      );
     }
   }
 }

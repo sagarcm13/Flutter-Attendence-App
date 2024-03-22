@@ -11,8 +11,8 @@ class FacultyDetails extends StatefulWidget {
 
 class _FacultyDetailsState extends State<FacultyDetails> {
   List<Map<String, dynamic>> facultyDetails = [];
-  List subject = [];
-  List email = [];
+  List<Map<String, dynamic>> subjectEmailMap = [];
+  List<String> email = [];
   final FirebaseFirestore db = FirebaseFirestore.instance;
   @override
   void initState() {
@@ -29,22 +29,30 @@ class _FacultyDetailsState extends State<FacultyDetails> {
         .then((value) => {
               for (var doc in value.docs)
                 {
-                  print("${doc.id} => ${doc.data()}"),
-                  email.add(doc.data()['email']),subject.add(doc.data()['subject'])
+                  email.add(doc.data()['email']),
+                  subjectEmailMap.add({
+                    "subject": doc.data()['subject'],
+                    "email": doc.data()['email']
+                  })
                 }
             });
-    email=email.toSet().toList();
-    subject=subject.toSet().toList();
-    print(email);
-    await db.collection("Faculty_Info").where('email',whereIn: email).get().then((value) => {
-      for(var doc in value.docs){
-        facultyDetails.add(doc.data())
+    await db
+        .collection("Faculty_Info")
+        .where('email', whereIn: email)
+        .get()
+        .then((value) => {
+              for (var doc in value.docs) {facultyDetails.add(doc.data())}
+            });
+    for (var item in facultyDetails) {
+      for (var map in subjectEmailMap) {
+        if (map['email'] == item['email']) {
+          item['subject'] = map['subject'];
+          break; // Once found, break the loop
+        }
       }
-    });
+    }
     print(facultyDetails);
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
@@ -86,43 +94,42 @@ class _FacultyDetailsState extends State<FacultyDetails> {
             ],
           ),
           Container(
-            height: 50,
+            height: 20,
           ),
           const Text(
             "Faculty Details",
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.w400),
           ),
-          const Text('SEM 5 Section C',style: TextStyle(fontSize: 20),),
+          const Text(
+            'SEM 5 Section C',
+            style: TextStyle(fontSize: 20),
+          ),
           Expanded(
             child: ListView.builder(
                 itemCount: facultyDetails.length,
-                itemBuilder: (context,index){
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  child: Padding(
+                itemBuilder: (context, index) {
+                  return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(facultyDetails[index]['name'],style: const TextStyle(fontSize: 22),),
-                        Text('Subjects handling: ${subject[index]}',style: const TextStyle(fontSize: 18)),
-                        Text("email: ${email[index]}",style:const TextStyle(fontSize: 18)),
-                        Text("phone: ${facultyDetails[index]['phone']}",style:const TextStyle(fontSize: 18))
-                      ],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      child: ListTile(
+                          leading: CircleAvatar(
+                            child: Text(facultyDetails[index]['name'][0]),
+                          ),
+                          title: Text(facultyDetails[index]['name'],
+                              style: const TextStyle(fontSize: 22)),
+                          subtitle: Text(
+                              "email: ${facultyDetails[index]['email']}\nSubject Handling: ${facultyDetails[index]['subject']}",
+                              style: const TextStyle(fontSize: 18))),
                     ),
-                  ),
-                ),
-              );
-            }),
+                  );
+                }),
           )
-
         ],
       ),
     );

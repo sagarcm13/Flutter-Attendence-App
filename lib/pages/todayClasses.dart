@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:attendece/pages/home.dart';
 
 class TodayClasses extends StatefulWidget {
-  Map<String, dynamic> userDetail;
-  TodayClasses(this.userDetail, {super.key});
+  final Map<String, dynamic> userDetail;
+  const TodayClasses(this.userDetail, {super.key});
   @override
   State<TodayClasses> createState() => _TodayClassesState(userDetail);
 }
@@ -19,7 +19,8 @@ class _TodayClassesState extends State<TodayClasses> {
   List<Map<String, dynamic>> subTimeSec = [];
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore db = FirebaseFirestore.instance;
-  List attendanceStatus = ['present', 'absent', 'absent', 'present'];
+  List attendanceStatus = ['present', 'absent', 'absent', 'present', 'present'];
+  late List<String> facultyNames=[];
   @override
   void initState() {
     super.initState();
@@ -54,14 +55,34 @@ class _TodayClassesState extends State<TodayClasses> {
     // email=user!.email!;
     await db
         .collection("Class_Time_Table")
-        .where("section", isEqualTo: user['sec'])
-        .where("day", isEqualTo: "monday")
+        .where("sec", isEqualTo: user['sec'])
+        .where("day", isEqualTo: "tuesday")
         .get()
         .then((value) => {
               for (var doc in value.docs)
                 {print("${doc.id} => ${doc.data()}"), classes.add(doc.data())}
             });
-    setState(() {});
+    var subjects = classes[0]['subjects'];
+    print(subjects);
+    var emails = [];
+    await db
+        .collection("Subjects_Handling")
+        .where("subject", whereIn: subjects)
+        .get()
+        .then((value) => {
+              for (var doc in value.docs) {emails.add(doc.data()["email"])}
+            });
+    print(emails);
+    await db
+        .collection("Faculty_Info")
+        .where("email", whereIn: emails)
+        .get()
+        .then((value) => {
+              for (var doc in value.docs) {facultyNames.add(doc.data()["name"])}
+            });
+    print(facultyNames);
+    setState(() {
+    });
   }
 
   @override
@@ -98,32 +119,13 @@ class _TodayClassesState extends State<TodayClasses> {
                   Icons.person_pin,
                   size: 40,
                 ),
-                onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>Profile(user)));},
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Profile(user)));
+                },
               )
             ],
           ),
-          Container(
-            height: 50,
-          ),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 50.0),
-                child: Text(
-                  user['name'],
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 20),
-                ),
-              )),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 50.0),
-                child: Text(
-                  user['email'],
-                  style: const TextStyle(fontSize: 20),
-                ),
-              )),
           const Align(
               alignment: Alignment.centerLeft,
               child: Padding(
@@ -169,18 +171,7 @@ class _TodayClassesState extends State<TodayClasses> {
                         subtitle: (isStudent)
                             ? Row(
                                 children: [
-                                  const Text("you are marked as "),
-                                  (attendanceStatus[index] == 'present')
-                                      ? Text(
-                                          attendanceStatus[index]!,
-                                          style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold),
-                                        )
-                                      : Text(attendanceStatus[index]!,
-                                          style: const TextStyle(
-                                              color: Colors.red,
-                                              fontWeight: FontWeight.bold))
+                                  Text("Subject handled by ${facultyNames[index]}"),
                                 ],
                               )
                             : Text(

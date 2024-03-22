@@ -4,11 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:math';
-import 'dart:math';
 
 class GetAttendanceButton extends StatefulWidget {
-  Map<String, dynamic> user;
-  GetAttendanceButton(this.user,{super.key});
+  final Map<String, dynamic> user;
+  const GetAttendanceButton(this.user, {super.key});
 
   @override
   State<GetAttendanceButton> createState() => _GetAttendanceButtonState(user);
@@ -21,8 +20,9 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
   List<Map<String, dynamic>> data = [];
   bool status = false;
   String subject = "AA";
-  double? latitude;
-  double? longitude;
+  double? latitude = 12.9450;
+  double? longitude = 77.5650;
+  late int? range = 0;
   late bool serviceEnabled;
   late LocationPermission permission;
   Position? currentPosition;
@@ -31,9 +31,11 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
     super.initState();
     getDbUpdate();
   }
+
   double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const double earthRadius = 6371000; // Radius of the Earth in meters
     double dLat = (lat2 - lat1) * (pi / 180);
+    print("$lat1 $lon1 $lat2 $lon2");
     double dLon = (lon2 - lon1) * (pi / 180);
     double a = sin(dLat / 2) * sin(dLat / 2) +
         cos(lat1 * (pi / 180)) *
@@ -44,9 +46,13 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
     double distance = earthRadius * c;
     return distance;
   }
-  bool isWithin10Meters(double currentLat, double currentLon, double targetLat, double targetLon) {
-    double distance = calculateDistance(currentLat, currentLon, targetLat, targetLon);
-    return distance <= 10;
+
+  bool isWithinRange(double currentLat, double currentLon, double targetLat,
+      double targetLon) {
+    double distance =
+        calculateDistance(currentLat, currentLon, targetLat, targetLon);
+    print(distance);
+    return distance <= range!;
   }
 
   Future<void> getDbUpdate() async {
@@ -58,55 +64,78 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
         if (change.type == DocumentChangeType.added) {
           print("New document added: ${change.doc.data()}");
           setState(() {
+            print(change.doc.data());
             status = change.doc.data()?['MarkAttendance'] ?? false;
-            latitude=change.doc.data()?['latitude'] ?? 0.0;
-            longitude=change.doc.data()?['longitude'] ?? 0.0;
+            latitude = change.doc.data()?['latitude'] ?? 0.0;
+            longitude = change.doc.data()?['longitude'] ?? 0.0;
+            range = change.doc.data()?['Range'] ?? 0.0;
+            print('lat-$latitude  long-$longitude range-$range');
+          });
+        }
+        if (change.type == DocumentChangeType.removed) {
+          setState(() {
+            status = false;
           });
         }
       }
     });
   }
+
   Future<void> getLocationStatus() async {
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.deniedForever) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Location permissions are permanently denied, we cannot request permissions.')));
+            content: Text(
+                'Location permissions are permanently denied, we cannot request permissions.')));
         setState(() {});
       }
     } else {
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      print(serviceEnabled);
       if (!serviceEnabled) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
                 'Location services are disabled. Please enable the services')));
       } else {
-        Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
+        print('${position.latitude} ${position.longitude}');
         setState(() {
           currentPosition = position;
         });
       }
     }
   }
+
   Future<void> markAttendance() async {
-    getLocationStatus();
-    bool validLocation=isWithin10Meters(currentPosition!.latitude,currentPosition!.longitude,latitude!,longitude!);
-    QuerySnapshot querySnapshot = await db
-        .collection('Student_Attendance')
-        .where('USN', isEqualTo: user["USN"])
-        .get();
-    for (var doc in querySnapshot.docs) {
-      DocumentReference documentReference = doc.reference;
-      Map<String, dynamic> currentSubjectInfo = doc['AA-Status'];
-      currentSubjectInfo['total_classes'] =
-          (currentSubjectInfo['total_classes']! + 1);
-      currentSubjectInfo['Attended'] = (currentSubjectInfo['Attended']! + 1);
-      print(currentSubjectInfo);
-      await documentReference.update({'AA-Status': currentSubjectInfo});
+    await getLocationStatus();
+    bool locationInRange = isWithinRange(currentPosition!.latitude,
+        currentPosition!.longitude, latitude!, longitude!);
+    print(locationInRange);
+    if (locationInRange) {
+      QuerySnapshot querySnapshot = await db
+          .collection('Student_Attendance')
+          .where('USN', isEqualTo: user["USN"])
+          .get();
+      for (var doc in querySnapshot.docs) {
+        DocumentReference documentReference = doc.reference;
+        List<dynamic> currentSubjectInfo = doc['subjectAttendance'];
+        for (var item in currentSubjectInfo) {
+          if (item['subject'] == "AA") {
+            item['total'] = (item['total']! + 1);
+            item['attended'] = (item['attended']! + 1);
+          }
+        }
+        print(currentSubjectInfo);
+        await documentReference
+            .update({'subjectAttendance': currentSubjectInfo});
+      }
+      status = false;
+      successStatus(context);
+    } else {
+      failedStatus(context);
     }
-    status = false;
     setState(() {});
   }
 
@@ -152,8 +181,10 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
                     Icons.person_pin,
                     size: 40,
                   ),
-                  onPressed: () {Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Profile(user)));},
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => Profile(user)));
+                  },
                 )
               ],
             ),
@@ -171,7 +202,7 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
                         height: 100,
                       ),
                       ElevatedButton(
-                        onPressed: () => failedStatus(context),
+                        onPressed: () => markAttendance(),
                         style: ButtonStyle(
                           elevation: MaterialStateProperty.all(8),
                           shape:
@@ -197,7 +228,9 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
                 : Center(
                     child: Column(
                       children: [
-                        Container(height: 50,),
+                        Container(
+                          height: 50,
+                        ),
                         const Padding(
                           padding: EdgeInsets.all(20.0),
                           child: Column(
@@ -238,15 +271,23 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return const AlertDialog(
-          title: Row(
+        return AlertDialog(
+          title: const Row(
             children: [
               Icon(Icons.check_circle, color: Colors.green, size: 32),
               SizedBox(width: 10),
               Text("Attendity"),
             ],
           ),
-          content: Text("Your Attendance Marked successfully."),
+          content: const Text("Your Attendance Marked successfully."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("OK"),
+            ),
+          ],
         );
       },
     );
@@ -268,13 +309,14 @@ class _GetAttendanceButtonState extends State<GetAttendanceButton> {
               Text("Attendity"),
             ],
           ),
-          content: const Text("Failed to mark your Attendance, try again."),
+          content: const Text(
+              "Failed to mark your Attendance, because of location mismatch"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         );

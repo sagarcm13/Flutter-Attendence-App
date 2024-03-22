@@ -77,7 +77,7 @@ class _StudentsDetails extends State<StudentsDetails> {
             height: 50,
           ),
           const Text(
-            "Faculty Details",
+            "Student Details",
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.w400),
           ),
           const Text('SEM 5 Section C',style: TextStyle(fontSize: 20),),
@@ -94,17 +94,12 @@ class _StudentsDetails extends State<StudentsDetails> {
                         ),
                         borderRadius: BorderRadius.circular(20.0),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(studentDetails[index]['name'],style: const TextStyle(fontSize: 22),),
-                            Text('Sem: ${studentDetails[index]['sem']} Section: ${studentDetails[index]['sec']}',style: const TextStyle(fontSize: 18)),
-                            Text("email: ${studentDetails[index]['email']}",style:const TextStyle(fontSize: 18)),
-                            Text("phone: ${studentDetails[index]['phone']}",style:const TextStyle(fontSize: 18))
-                          ],
-                        ),
+                      child: ListTile(
+                          leading: CircleAvatar(
+                            child: Text(studentDetails[index]['name'][0]),
+                          ),
+                        title: Text(studentDetails[index]['name'],style: const TextStyle(fontSize: 22)),
+                        subtitle:Text("email: ${studentDetails[index]['email']}",style:const TextStyle(fontSize: 18))
                       ),
                     ),
                   );

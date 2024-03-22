@@ -1,6 +1,3 @@
-import 'package:attendece/pages/addSubjectClass.dart';
-import 'package:attendece/pages/attendanceTrigger.dart';
-import 'package:attendece/pages/getAttendandanceButton.dart';
 import 'package:attendece/pages/splashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
